@@ -1,0 +1,7 @@
+numpy          # Obsługa obliczeń numerycznych
+scipy          # Funkcje matematyczne i sygnałowe
+matplotlib     # Wizualizacja danych
+control        # Analiza i symulacja systemów dynamicznych
+sympy          # Obliczenia symboliczne
+ipykernel      # Uruchamianie notebooków Jupyter
+cupy-cuda12x   # GPU NumPy-like (CUDA 12.x)
