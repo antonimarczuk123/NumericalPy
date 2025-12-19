@@ -41,7 +41,7 @@ X_val = (X_val - X_min) / (X_max - X_min)  # Przeskalowanie do [0, 1]
 
 # Wczytaj zapisane wagi modelu oraz poprzednie kierunki minimalizacji
 
-data = np.load(f"weights_({n_hidden[0]},{n_hidden[1]},{n_hidden[2]},{n_hidden[3]})_hidden.npz")
+data = np.load(f"weights_4x30.npz")
 
 b1 = data['b1']
 W1 = data['W1']
@@ -308,7 +308,7 @@ plt.tight_layout() # ładniej wyglądają wykresy
 
 
 # Zapisanie wyznaczonych wag modelu
-np.savez(f"weights_({n_hidden[0]},{n_hidden[1]},{n_hidden[2]},{n_hidden[3]})_hidden.npz", 
+np.savez(f"weights_4x30.npz", 
     b1=b1, W1=W1, b2=b2, W2=W2, b3=b3, W3=W3, b4=b4, W4=W4, b5=b5, W5=W5,
     p_b1_old=p_b1_old, p_W1_old=p_W1_old, p_b2_old=p_b2_old, p_W2_old=p_W2_old, p_b3_old=p_b3_old, 
     p_W3_old=p_W3_old, p_b4_old=p_b4_old, p_W4_old=p_W4_old, p_b5_old=p_b5_old, p_W5_old=p_W5_old)
