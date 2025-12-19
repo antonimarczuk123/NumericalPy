@@ -107,10 +107,10 @@ p_W5_old = data['p_W5_old']
 # Uczenie sieci metodą SGD z bezwładnością.
 
 
-max_epochs = 50 # maksymalna liczba epok
+max_epochs = 100 # maksymalna liczba epok
 learning_rate = 0.005 # współczynnik uczenia
 momentum = 0.9 # współczynnik momentum
-mb_size = 5000 # rozmiar mini-batcha
+mb_size = 8000 # rozmiar mini-batcha
 
 
 # deklaracja potrzebnych tablic
