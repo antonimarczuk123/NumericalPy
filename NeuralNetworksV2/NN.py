@@ -1,4 +1,4 @@
-# %% _________________________________________________________________________________________
+# %% __________________________________________________________________
 # Sieć neuronowa z czterema warstwami ukrytymi neuronów typu ReLU.
 # Uczenie metodą SGD z bezwładnością.
 # Całość zaimplementowana z wykorzystaniem NumPy.
@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# %% _________________________________________________________________________________________
+# %% __________________________________________________________________
 # Przygotowanie danych uczących i walidujących.
 
 
@@ -34,7 +34,7 @@ Y_val = Fun(X_val).reshape(n_outputs, n_val)
 X_val = (X_val - X_min) / (X_max - X_min)  # Przeskalowanie do [0, 1]
 
 
-# %% _________________________________________________________________________________________
+# %% __________________________________________________________________
 # Inicjalizacja wag i biasów sieci. Możemy też wczytać z pliku 
 # zapisane wcześniej wagi i kontynuować uczenie.
 
@@ -103,7 +103,7 @@ p_W5_old = data['p_W5_old']
 
 
 
-# %% _________________________________________________________________________________________
+# %% __________________________________________________________________
 # Uczenie sieci metodą SGD z bezwładnością.
 
 
@@ -303,7 +303,7 @@ plt.tight_layout() # ładniej wyglądają wykresy
 
 
 
-# %% _________________________________________________________________________________________
+# %% __________________________________________________________________
 # Zapisanie wyznaczonych wag modelu.
 
 
@@ -315,7 +315,7 @@ np.savez(f"weights_({n_hidden[0]},{n_hidden[1]},{n_hidden[2]},{n_hidden[3]})_hid
 
 
 
-# %% _________________________________________________________________________________________
+# %% __________________________________________________________________
 # Wykresy diagnostyczne dopasowania modelu.
 
 # --- Ocena modelu ---
