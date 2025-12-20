@@ -1,6 +1,6 @@
 # %% __________________________________________________________________
 # Sieć neuronowa z czterema warstwami ukrytymi neuronów typu ReLU.
-# Uczenie metodą SGD z bezwładnością.
+# Uczenie metodą SGD + Nesterov momentum.
 # Całość zaimplementowana z wykorzystaniem NumPy.
 # Autor: Antoni Marczuk
 
@@ -107,10 +107,10 @@ p_W5_old = data['p_W5_old']
 # Uczenie sieci metodą SGD z bezwładnością.
 
 
-max_epochs = 100 # maksymalna liczba epok
-learning_rate = 0.005 # współczynnik uczenia
+max_epochs = 1000 # maksymalna liczba epok
+learning_rate = 0.001 # współczynnik uczenia
 momentum = 0.9 # współczynnik momentum
-mb_size = 8000 # rozmiar mini-batcha
+mb_size = 500 # rozmiar mini-batcha
 
 
 # deklaracja potrzebnych tablic
@@ -180,6 +180,23 @@ dE_dW5 = np.zeros((n_outputs, n_hidden[3]))
 
 # ---
 
+b1_look = np.zeros((n_hidden[0], 1))
+W1_look = np.zeros((n_hidden[0], n_inputs))
+
+b2_look = np.zeros((n_hidden[1], 1))
+W2_look = np.zeros((n_hidden[1], n_hidden[0]))
+
+b3_look = np.zeros((n_hidden[2], 1))
+W3_look = np.zeros((n_hidden[2], n_hidden[1]))
+
+b4_look = np.zeros((n_hidden[3], 1))
+W4_look = np.zeros((n_hidden[3], n_hidden[2]))
+
+b5_look = np.zeros((n_outputs, 1))
+W5_look = np.zeros((n_outputs, n_hidden[3]))
+
+# ---
+
 MSEtrainTab = np.zeros((max_epochs+1, 1))
 MSEvalTab = np.zeros((max_epochs+1, 1))
 
@@ -200,24 +217,36 @@ for i in range(max_epochs):
         X = X_train[:, idx]
         Y = Y_train[:, idx]
 
+        # Nesterov lookahead
+        b1_look = b1 + momentum * p_b1_old
+        W1_look = W1 + momentum * p_W1_old
+        b2_look = b2 + momentum * p_b2_old
+        W2_look = W2 + momentum * p_W2_old
+        b3_look = b3 + momentum * p_b3_old
+        W3_look = W3 + momentum * p_W3_old
+        b4_look = b4 + momentum * p_b4_old
+        W4_look = W4 + momentum * p_W4_old
+        b5_look = b5 + momentum * p_b5_old
+        W5_look = W5 + momentum * p_W5_old
+
         # Forward pass
-        Z1 = W1 @ X + b1
+        Z1 = W1_look @ X + b1_look
         V1 = np.maximum(0, Z1)
-        Z2 = W2 @ V1 + b2
+        Z2 = W2_look @ V1 + b2_look
         V2 = np.maximum(0, Z2)
-        Z3 = W3 @ V2 + b3
+        Z3 = W3_look @ V2 + b3_look
         V3 = np.maximum(0, Z3)
-        Z4 = W4 @ V3 + b4
+        Z4 = W4_look @ V3 + b4_look
         V4 = np.maximum(0, Z4)
-        Z5 = W5 @ V4 + b5
+        Z5 = W5_look @ V4 + b5_look
         Y_hat = Z5
 
         # Backward pass
         dL5 = 2 * (Y_hat - Y)
-        dL4 = (W5.T @ dL5) * (Z4 > 0)
-        dL3 = (W4.T @ dL4) * (Z3 > 0)
-        dL2 = (W3.T @ dL3) * (Z2 > 0)
-        dL1 = (W2.T @ dL2) * (Z1 > 0)
+        dL4 = (W5_look.T @ dL5) * (Z4 > 0)
+        dL3 = (W4_look.T @ dL4) * (Z3 > 0)
+        dL2 = (W3_look.T @ dL3) * (Z2 > 0)
+        dL1 = (W2_look.T @ dL2) * (Z1 > 0)
 
         # Gradienty
         dE_db5 = np.mean(dL5, axis=1, keepdims=True)
@@ -236,28 +265,28 @@ for i in range(max_epochs):
         dE_dW1 = (dL1 @ X.T) / mb_size
 
         # Aktualizacja kierunków
-        p_b5 = (1 - momentum) * dE_db5 + momentum * p_b5_old
-        p_W5 = (1 - momentum) * dE_dW5 + momentum * p_W5_old
-        p_b4 = (1 - momentum) * dE_db4 + momentum * p_b4_old
-        p_W4 = (1 - momentum) * dE_dW4 + momentum * p_W4_old
-        p_b3 = (1 - momentum) * dE_db3 + momentum * p_b3_old
-        p_W3 = (1 - momentum) * dE_dW3 + momentum * p_W3_old
-        p_b2 = (1 - momentum) * dE_db2 + momentum * p_b2_old
-        p_W2 = (1 - momentum) * dE_dW2 + momentum * p_W2_old
-        p_b1 = (1 - momentum) * dE_db1 + momentum * p_b1_old
-        p_W1 = (1 - momentum) * dE_dW1 + momentum * p_W1_old
+        p_b5 = momentum * p_b5_old - learning_rate * dE_db5
+        p_W5 = momentum * p_W5_old - learning_rate * dE_dW5
+        p_b4 = momentum * p_b4_old - learning_rate * dE_db4
+        p_W4 = momentum * p_W4_old - learning_rate * dE_dW4
+        p_b3 = momentum * p_b3_old - learning_rate * dE_db3
+        p_W3 = momentum * p_W3_old - learning_rate * dE_dW3
+        p_b2 = momentum * p_b2_old - learning_rate * dE_db2
+        p_W2 = momentum * p_W2_old - learning_rate * dE_dW2
+        p_b1 = momentum * p_b1_old - learning_rate * dE_db1
+        p_W1 = momentum * p_W1_old - learning_rate * dE_dW1
 
         # Aktualizacja wag i biasów
-        b5 -= learning_rate * p_b5
-        W5 -= learning_rate * p_W5
-        b4 -= learning_rate * p_b4
-        W4 -= learning_rate * p_W4
-        b3 -= learning_rate * p_b3
-        W3 -= learning_rate * p_W3
-        b2 -= learning_rate * p_b2
-        W2 -= learning_rate * p_W2
-        b1 -= learning_rate * p_b1
-        W1 -= learning_rate * p_W1
+        b5 += p_b5
+        W5 += p_W5
+        b4 += p_b4
+        W4 += p_W4
+        b3 += p_b3
+        W3 += p_W3
+        b2 += p_b2
+        W2 += p_W2
+        b1 += p_b1
+        W1 += p_W1
 
         # Zapisanie poprzednich kierunków
         p_b5_old = p_b5
