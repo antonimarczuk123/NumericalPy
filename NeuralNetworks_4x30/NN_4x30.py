@@ -39,7 +39,7 @@ X_val = (X_val - X_min) / (X_max - X_min)  # Przeskalowanie do [0, 1]
 # zapisane wcześniej wagi i kontynuować uczenie.
 
 
-# Wczytaj zapisane wagi modelu oraz poprzednie kierunki minimalizacji
+# Wczytaj zapisane wagi modelu oraz poprzednie kroki minimalizacji
 
 data = np.load(f"weights_4x30.npz")
 
@@ -84,7 +84,7 @@ p_W5_old = data['p_W5_old']
 # b5 = np.random.uniform(-0.5, 0.5, (n_outputs, 1))
 # W5 = np.random.uniform(-0.5, 0.5, (n_outputs, n_hidden[3]))
 
-# # zerowa inicjalizacja poprzedniego kierunku minimalizacji
+# # zerowa inicjalizacja poprzednich kroków minimalizacji
 
 # p_b1_old = np.zeros((n_hidden[0], 1))
 # p_W1_old = np.zeros((n_hidden[0], n_inputs))
@@ -104,11 +104,11 @@ p_W5_old = data['p_W5_old']
 
 
 # %% __________________________________________________________________
-# Uczenie sieci metodą SGD z bezwładnością.
+# Uczenie sieci metodą SGD + Nesterov momentum.
 
 
-max_epochs = 500 # maksymalna liczba epok
-learning_rate = 0.0005 # współczynnik uczenia
+max_epochs = 2000 # maksymalna liczba epok
+learning_rate = 0.001 # współczynnik uczenia
 momentum = 0.9 # współczynnik momentum
 mb_size = 500 # rozmiar mini-batcha
 
@@ -264,7 +264,7 @@ for i in range(max_epochs):
         dE_db1 = np.mean(dL1, axis=1, keepdims=True)
         dE_dW1 = (dL1 @ X.T) / mb_size
 
-        # Aktualizacja kierunków
+        # Aktualizacja kroków
         p_b5 = momentum * p_b5_old - learning_rate * dE_db5
         p_W5 = momentum * p_W5_old - learning_rate * dE_dW5
         p_b4 = momentum * p_b4_old - learning_rate * dE_db4
@@ -288,7 +288,7 @@ for i in range(max_epochs):
         b1 += p_b1
         W1 += p_W1
 
-        # Zapisanie poprzednich kierunków
+        # Zapisanie poprzednich kroków
         p_b5_old = p_b5
         p_W5_old = p_W5
         p_b4_old = p_b4
@@ -333,10 +333,10 @@ plt.tight_layout() # ładniej wyglądają wykresy
 
 
 # %% __________________________________________________________________
-# Zapisanie wyznaczonych wag modelu.
+# Zapisanie wyznaczonych wag modelu i poprzednich kroków minimalizacji.
 
 
-# Zapisanie wyznaczonych wag modelu
+# Zapisanie wyznaczonych wag modelu i poprzednich kroków minimalizacji
 np.savez(f"weights_4x30.npz", 
     b1=b1, W1=W1, b2=b2, W2=W2, b3=b3, W3=W3, b4=b4, W4=W4, b5=b5, W5=W5,
     p_b1_old=p_b1_old, p_W1_old=p_W1_old, p_b2_old=p_b2_old, p_W2_old=p_W2_old, p_b3_old=p_b3_old, 
@@ -355,22 +355,28 @@ Ymodel_val = b5 + W5 @ np.maximum(0, b4 + W4 @ np.maximum(0, b3 + W3 @ np.maximu
 
 MSEtrain = np.mean((Ymodel_train - Y_train) ** 2)
 MSEval = np.mean((Ymodel_val - Y_val) ** 2)
-print(f"\n MSE (train):  {MSEtrain:.6e}\n MSE (val):    {MSEval:.6e}")
+print(f"\n MSE (train) =  {MSEtrain:.6e}\n MSE (val) =    {MSEval:.6e}")
 
 # NMSE = MSE / var(Y)
 var_norm_MSE_train = MSEtrain / np.var(Y_train)
 var_norm_MSE_val = MSEval / np.var(Y_val)
-print(f"\n variance-normalized MSE (train):  {var_norm_MSE_train:.6f}\n variance-normalized MSE (val):    {var_norm_MSE_val:.6f}")
+print("\n variance-normalized MSE = MSE : var(Y)")
+print(f" variance-normalized MSE (train) =  {var_norm_MSE_train:.6f}\n variance-normalized MSE (val) =    {var_norm_MSE_val:.6f}")
 
 MAEtrain = np.mean(np.abs(Ymodel_train - Y_train))
 MAEval = np.mean(np.abs(Ymodel_val - Y_val))
-print(f"\n MAE (train):  {MAEtrain:.6e}\n MAE (val):    {MAEval:.6e}")
-
+print(f"\n MAE (train) =  {MAEtrain:.6f}\n MAE (val) =    {MAEval:.6f}")
 # NMAE = MAE / (Ymax - Ymin)
 range_norm_MAE_train = MAEtrain / (Y_train.max() - Y_train.min())
 range_norm_MAE_val = MAEval / (Y_val.max() - Y_val.min())
-print(f"\n range-normalized MAE (train):  {range_norm_MAE_train:.6f}\n range-normalized MAE (val):    {range_norm_MAE_val:.6f}")
+print("\n range-normalized MAE = MAE : (Ymax - Ymin)")
+print(f" range-normalized MAE (train) =  {range_norm_MAE_train:.6f}\n range-normalized MAE (val) =    {range_norm_MAE_val:.6f}")
 
+# NMAE = MAE / mean(|Y|)
+mean_norm_MAE_train = MAEtrain / np.mean(np.abs(Y_train))
+mean_norm_MAE_val = MAEval / np.mean(np.abs(Y_val))
+print("\n mean-normalized MAE = MAE : mean(|Y|)")
+print(f" mean-normalized MAE (train) =  {mean_norm_MAE_train:.6f}\n mean-normalized MAE (val) =    {mean_norm_MAE_val:.6f}")
 
 #  --- Wykres dopasowania (prawdziwy Y) vs (przewidywany Y) ---
 
