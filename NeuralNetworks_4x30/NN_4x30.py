@@ -107,10 +107,10 @@ p_W5_old = data['p_W5_old']
 # Uczenie sieci metodą SGD + Nesterov momentum.
 
 
-max_epochs = 2000 # maksymalna liczba epok
-learning_rate = 0.001 # współczynnik uczenia
+max_epochs = 50 # maksymalna liczba epok
+learning_rate = 0.0005 # współczynnik uczenia
 momentum = 0.9 # współczynnik momentum
-mb_size = 500 # rozmiar mini-batcha
+mb_size = 5000 # rozmiar mini-batcha
 
 
 # deklaracja potrzebnych tablic
